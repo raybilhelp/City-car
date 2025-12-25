@@ -2,7 +2,11 @@
   "name": "city-car",
   "version": "1.0.0",
   "main": "index.html",
+  "devDependencies": {
+    "electron": "^25.0.0",
+    "electron-builder": "^24.4.0"
+  },
   "scripts": {
-    "start": "electron ."
+    "build": "electron-builder --win"
   }
 }
