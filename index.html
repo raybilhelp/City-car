@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time User Tracker</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 { color: #333; }
+
+        /* Status Indicator */
+        #status-bar {
+            width: 100%;
+            max-width: 800px;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 20px;
+            transition: 0.3s;
+        }
+        .online { background-color: #2ecc71; color: white; }
+        .offline { background-color: #e74c3c; color: white; }
+
+        /* Terminal Style */
+        #terminal {
+            width: 100%;
+            max-width: 800px;
+            height: 250px;
+            background-color: #1e1e1e;
+            color: #00ff00;
+            font-family: 'Courier New', Courier, monospace;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-y: auto;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+        }
+
+        .log-entry { margin-bottom: 5px; border-bottom: 1px solid #333; padding-bottom: 2px; }
+        .timestamp { color: #888; font-size: 0.8em; }
+
+        /* Dashboard Style */
+        #dashboard {
+            width: 100%;
+            max-width: 800px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .card h3 { margin: 0; color: #555; font-size: 14px; }
+        .card p { font-size: 24px; font-weight: bold; margin: 10px 0 0; color: #2c3e50; }
+    </style>
+</head>
+<body>
+
+    <h1>User Activity Monitor</h1>
+
+    <!-- Status Indicator -->
+    <div id="status-bar" class="online">USER STATUS: ONLINE (Inside App)</div>
+
+    <!-- Terminal -->
+    <div id="terminal" id="terminal-body">
+        <div class="log-entry"> > System initialized... Waiting for user action.</div>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="dashboard">
+        <div class="card">
+            <h3>Total Clicks</h3>
+            <p id="click-count">0</p>
+        </div>
+        <div class="card">
+            <h3>Mouse Moves</h3>
+            <p id="move-count">0</p>
+        </div>
+        <div class="card">
+            <h3>Session Logs</h3>
+            <p id="session-logs">1</p>
+        </div>
+    </div>
+
+    <script>
+        const terminal = document.getElementById('terminal');
+        const statusBar = document.getElementById('status-bar');
+        const clickDisplay = document.getElementById('click-count');
+        const moveDisplay = document.getElementById('move-count');
+        const sessionDisplay = document.getElementById('session-logs');
+
+        let clickCount = 0;
+        let moveCount = 0;
+        let logCount = 1;
+
+        // Function to add logs to Terminal
+        function addLog(message) {
+            const now = new Date();
+            const timeStr = now.getHours() + ":" + now.getMinutes() + ":" + now.getSeconds();
+            
+            const div = document.createElement('div');
+            div.className = 'log-entry';
+            div.innerHTML = `<span class="timestamp">[${timeStr}]</span> ${message}`;
+            terminal.appendChild(div);
+            
+            // Auto scroll to bottom
+            terminal.scrollTop = terminal.scrollHeight;
+
+            logCount++;
+            sessionDisplay.innerText = logCount;
+        }
+
+        // 1. Detect User Presence (Tab Switch/Minimize)
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                statusBar.innerText = "USER STATUS: OFFLINE (Left the App)";
+                statusBar.className = "offline";
+                addLog("🔴 User left the application (Tab switched or minimized)");
+            } else {
+                statusBar.innerText = "USER STATUS: ONLINE (Returned)";
+                statusBar.className = "online";
+                addLog("🟢 User came back to the application");
+            }
+        });
+
+        // 2. Detect Clicks
+        document.addEventListener('click', (e) => {
+            clickCount++;
+            clickDisplay.innerText = clickCount;
+            addLog(`🖱️ Mouse Clicked at: X:${e.clientX}, Y:${e.clientY}`);
+        });
+
+        // 3. Detect Mouse Movement
+        let moveTimeout;
+        document.addEventListener('mousemove', () => {
+            moveCount++;
+            moveDisplay.innerText = moveCount;
+            
+            // Optimization: Don't log every single pixel move to terminal, just update counter
+            // but log to terminal every 100 moves to show activity
+            if(moveCount % 100 === 0) {
+                addLog("📍 Continuous mouse movement detected...");
+            }
+        });
+
+        // 4. Initial Entry Log
+        addLog("🚀 User entered the app.");
+
+    </script>
+</body>
+</html>
